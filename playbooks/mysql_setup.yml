@@ -1,0 +1,27 @@
+---
+- hosts: dbservers
+  become: true
+  tasks:
+    - name: Install MySQL
+      apt:
+        name: mysql-server
+        state: present
+        update_cache: true
+
+    - name: Configure MySQL Master
+      template:
+        src: templates/mysql_master.cnf.j2
+        dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+      when: "'master' in inventory_hostname"
+
+    - name: Configure MySQL Slave
+      template:
+        src: templates/mysql_slave.cnf.j2
+        dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+      when: "'slave' in inventory_hostname"
+
+    - name: Start MySQL service
+      service:
+        name: mysql
+        state: started
+        enabled: true
